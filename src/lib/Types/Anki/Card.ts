@@ -93,3 +93,12 @@ export type AnkiCardServiceCall<A extends AnkiCardAction> = {
 	params: AnkiCardActionParams[A];
 	returnType: AnkiCardActionResult[A];
 };
+
+export type AnkiCardMediaResult = { result: { field: string; media: string; type: 'image' | 'audio' }, error: string | null };
+
+export type SvankiCardField = { template: string, media: AnkiCardMediaResult[], error: string | null };
+
+export type SvankiCardInfo = {
+	Front: SvankiCardField;
+	Back: SvankiCardField;
+}

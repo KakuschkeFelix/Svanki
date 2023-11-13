@@ -82,6 +82,9 @@ devDependencies:
   svelte-check:
     specifier: ^3.4.3
     version: 3.5.2(postcss-load-config@4.0.1)(postcss@8.4.31)(svelte@4.2.2)
+  sveltekit-superforms:
+    specifier: ^1.10.1
+    version: 1.10.1(@sveltejs/kit@1.27.3)(svelte@4.2.2)(zod@3.22.4)
   tailwindcss:
     specifier: ^3.3.2
     version: 3.3.5
@@ -97,6 +100,9 @@ devDependencies:
   vite:
     specifier: ^4.4.2
     version: 4.5.0(@types/node@20.9.0)
+  zod:
+    specifier: ^3.22.4
+    version: 3.22.4
 
 packages:
 
@@ -2470,6 +2476,18 @@ packages:
       magic-string: 0.30.5
       periscopic: 3.1.0
 
+  /sveltekit-superforms@1.10.1(@sveltejs/kit@1.27.3)(svelte@4.2.2)(zod@3.22.4):
+    resolution: {integrity: sha512-xNRLuncJf7UoJSr543IpFRu5si2Vv7dd8lsc6w1MAodGcIvDFn76T6jF/idftos7Vt/OOi3btFsvrJvT99n4dg==}
+    peerDependencies:
+      '@sveltejs/kit': 1.x
+      svelte: 3.x || 4.x
+      zod: 3.x
+    dependencies:
+      '@sveltejs/kit': 1.27.3(svelte@4.2.2)(vite@4.5.0)
+      svelte: 4.2.2
+      zod: 3.22.4
+    dev: true
+
   /tailwindcss@3.3.5:
     resolution: {integrity: sha512-5SEZU4J7pxZgSkv7FP1zY8i2TIAOooNZ1e/OGtxIEv6GltpoiXUqWvLy89+a10qYTB1N5Ifkuw9lqQkN9sscvA==}
     engines: {node: '>=14.0.0'}
@@ -2738,4 +2756,8 @@ packages:
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+    dev: true
+
+  /zod@3.22.4:
+    resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: true

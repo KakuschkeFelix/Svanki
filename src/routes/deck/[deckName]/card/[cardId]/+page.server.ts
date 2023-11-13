@@ -8,6 +8,9 @@ import { shuffleArray } from '$lib/helpers';
 import { ModelService } from '$lib/Services/ModelService';
 import sanitizeHtml from 'sanitize-html';
 import type { AnkiModelActionResult } from '$lib/Types/Anki/Model';
+import { z } from 'zod';
+import { superValidate } from 'sveltekit-superforms/server';
+import { AnkiService } from '$lib/Services/AnkiService';
 
 // Helper function to handle errors
 function handleError<T>(result: { error: string | null; result: T }, errorMessage: string, resultValidator: (result: T) => boolean) {
@@ -27,7 +30,13 @@ const sanitizeModels = (modelTemplates: AnkiModelActionResult['modelTemplates'])
         }, {} as Record<string, string>);
         return acc;
     }, {} as Record<string, Record<string, string>>);
-}
+};
+
+const answerSchema = z.object({
+    answer: z.number().gte(1).lte(4),
+});
+
+export type AnswerSchema = typeof answerSchema;
 
 export const load = (async ({ params, parent }) => {
     const { currentDeck } = await parent();
@@ -66,5 +75,6 @@ export const load = (async ({ params, parent }) => {
         card: card.result![0],
         nextCard: cards[0],
         models: sanitizedModels,
+        answerForm: superValidate(answerSchema),
     };
 }) satisfies PageServerLoad;

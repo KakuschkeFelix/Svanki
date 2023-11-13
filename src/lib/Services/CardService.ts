@@ -1,12 +1,15 @@
-import type { AnkiCardServiceCall, AnkiCardActionParams, CardInfo } from '$lib/Types/Anki/Card';
+import type { AnkiCardServiceCall, AnkiCardActionParams, CardInfo, AnkiCardMediaResult, SvankiCardInfo, SvankiCardField } from '$lib/Types/Anki/Card';
 import { AnkiService } from './AnkiService';
+import { MediaService } from './MediaService';
 
 export class CardService {
 	private readonly _anki: AnkiService;
+	private readonly _mediaService: MediaService;
 	private static instance: CardService;
 
-	constructor(anki: AnkiService = new AnkiService()) {
+	constructor(anki: AnkiService = new AnkiService(), mediaService: MediaService = new MediaService()) {
 		this._anki = anki;
+		this._mediaService = mediaService;
 	}
 
 	public static getInstance(): CardService {
@@ -166,21 +169,68 @@ export class CardService {
 		});
 	}
 
-	public static hydrateCard(fields: CardInfo['fields'], template: string): string {
-		return template.replace(/{{(.*?)}}/g, (_, key) => {
-			const sanitizedKey = key.replace(/edit:/g, '').replace(/furigana:/g, '');
-			let value = fields[sanitizedKey]?.value;
-			if (sanitizedKey === 'FrontSide') return '';
-			if (!value) return `{{${sanitizedKey}}}`;
-			if (/furigana:/.test(key)) {
-				value = this.addFurigana(value);
+	private async generateHydratedCard(fields: CardInfo['fields'], template: string): Promise<string> {
+		const placeholderRegex = /{{(.*?)}}/g;
+		let placeholderMatch;
+		let hydratedTemplate = template;
+
+		while ((placeholderMatch = placeholderRegex.exec(template)) !== null) {
+			const fullPlaceholder = placeholderMatch[0];
+			const placeholderKey = placeholderMatch[1];
+			const sanitizedPlaceholderKey = placeholderKey.replace(/edit:/g, '').replace(/furigana:/g, '');
+			let fieldValue = fields[sanitizedPlaceholderKey]?.value;
+			if (!fieldValue) fieldValue = `{{${sanitizedPlaceholderKey}}}`;
+			if (sanitizedPlaceholderKey === 'FrontSide') fieldValue = '';
+			if (/furigana:/.test(placeholderKey)) {
+				fieldValue = CardService.addFuriganaToInput(fieldValue);
 			}
-			return value;
-		});
+			hydratedTemplate = hydratedTemplate.replace(fullPlaceholder, fieldValue);
+		}
+
+		return hydratedTemplate;
 	}
 
-	private static addFurigana(input: string): string {
-		return input.replace(/\s(.+?)\[(.+?)\]/g, (_, text, furigana) => {
+
+	private async getCardMedia(template: string): Promise<AnkiCardMediaResult[]> {
+		const placeholderRegex = /\[sound:(.+?)\.mp3\]/;
+		const output: AnkiCardMediaResult[] = [];
+
+		const generateOutput = (field: string, media: string, error: string | null): AnkiCardMediaResult => {
+			return {
+				result: {
+					field,
+					media,
+					type: 'audio'
+				},
+				error
+			};
+		};
+
+		let placeholderMatch;
+		while ((placeholderMatch = placeholderRegex.exec(template)) !== null) {
+			const soundFilename = placeholderMatch[1];
+			template = template.replace(placeholderMatch[0], '');
+			const media = await this._mediaService.retrieveMediaFile(`${soundFilename}.mp3`);
+
+			if (media.error || !media.result) {
+				output.push(generateOutput(placeholderMatch[0], '', media.error || 'No media result'));
+				continue;
+			}
+
+			output.push(generateOutput(placeholderMatch[0], media.result, null));
+		}
+		return output;
+	}
+
+	public async generateCardWithMedia(fields: CardInfo['fields'], template: string): Promise<SvankiCardField> {
+		let hydratedTemplate = await this.generateHydratedCard(fields, template);
+		const media = await this.getCardMedia(hydratedTemplate);
+		hydratedTemplate = hydratedTemplate.replace(/\[sound:(.+?)\.mp3\]/g, '');
+		return { template: hydratedTemplate, media, error: null };
+	}
+
+	private static addFuriganaToInput(input: string): string {
+		return input.replace(/(?:^|\s)(.+?)\[(.+?)\]/g, (_, text, furigana) => {
 			return `<ruby>${text}<rt>${furigana}</rt></ruby>`;
 		});
 	}
