@@ -1,4 +1,4 @@
-import type { AnkiCardServiceCall, AnkiCardActionParams } from '$lib/Types/Anki/Card';
+import type { AnkiCardServiceCall, AnkiCardActionParams, CardInfo } from '$lib/Types/Anki/Card';
 import { AnkiService } from './AnkiService';
 
 export class CardService {
@@ -163,6 +163,24 @@ export class CardService {
 			action: 'answerCards',
 			version: 6,
 			params: { answers }
+		});
+	}
+
+	public static hydrateCard(fields: CardInfo['fields'], template: string): string {
+		return template.replace(/{{(.*?)}}/g, (_, key) => {
+			const sanitizedKey = key.replace(/edit:/g, '').replace(/furigana:/g, '');
+			let value = fields[sanitizedKey]?.value;
+			if (!value) return `{{${sanitizedKey}}}`;
+			if (/furigana:/.test(key)) {
+				value = this.addFurigana(value);
+			}
+			return value;
+		});
+	}
+
+	private static addFurigana(input: string): string {
+		return input.replace(/\s(.+?)\[(.+?)\]/g, (_, text, furigana) => {
+			return `<ruby>${text}<rt>${furigana}</rt></ruby>`;
 		});
 	}
 }
