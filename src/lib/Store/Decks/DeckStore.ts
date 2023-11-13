@@ -1,22 +1,24 @@
 import type { AnkiDeckActionResult, DeckConfig } from '$lib/Types/Anki/Deck';
 import { createActionMap, createSelector, createStore } from 'rx-svelte';
 
-type DeckStoreActionsNames = 'SET_DECK_NAMES_AND_IDS' | 'SET_CURRENT_DECK_INFO' | 'SET_CURRENT_DECK_CONFIG';
+type DeckStoreActionsNames = 'SET_DECK_OVERVIEWS' | 'SET_CURRENT_DECK';
 type DeckStoreActionsPayloads = {
-	SET_DECK_NAMES_AND_IDS: AnkiDeckActionResult['deckNamesAndIds'];
-	SET_CURRENT_DECK_INFO: { name: string; id: number };
-	SET_CURRENT_DECK_CONFIG: DeckConfig;
+	SET_DECK_OVERVIEWS: AnkiDeckActionResult['getDeckStats'];
+	SET_CURRENT_DECK: DeckConfig;
 };
 
 type DeckStoreState = {
 	decks: {
-		[deckName: string]: number;
+		[deckId: number]: {
+			deck_id: number;
+			name: string;
+			new_count: number;
+			learn_count: number;
+			review_count: number;
+			total_in_deck: number;
+		};
 	};
-	currentDeck?: {
-		name?: string;
-		id?: number;
-		config?: DeckConfig;
-	};
+	currentDeck?: DeckConfig;
 };
 
 const initialState: DeckStoreState = {
@@ -25,24 +27,13 @@ const initialState: DeckStoreState = {
 };
 
 const actions = createActionMap<DeckStoreActionsNames, DeckStoreState, DeckStoreActionsPayloads>({
-	SET_DECK_NAMES_AND_IDS: (state, payload) => ({
+	SET_DECK_OVERVIEWS: (state, payload) => ({
 		...state,
 		decks: payload
 	}),
-	SET_CURRENT_DECK_INFO: (state, payload) => ({
+	SET_CURRENT_DECK: (state, payload) => ({
 		...state,
-		currentDeck: {
-			name: payload.name,
-			id: payload.id,
-			config: state.currentDeck?.config
-		}
-	}),
-	SET_CURRENT_DECK_CONFIG: (state, payload) => ({
-		...state,
-		currentDeck: {
-			...state.currentDeck,
-			config: payload
-		}
+		currentDeck: payload
 	})
 });
 
@@ -51,24 +42,3 @@ export const deckStore = createStore<
 	DeckStoreState,
 	DeckStoreActionsPayloads
 >(initialState, actions);
-
-export const selectAllDecks = createSelector<
-	DeckStoreActionsNames,
-	DeckStoreState,
-	DeckStoreState['decks']
->(deckStore, (state) => state.decks);
-
-export const selectCurrentDeckConfig = createSelector<
-	DeckStoreActionsNames,
-	DeckStoreState,
-	DeckConfig | undefined
->(deckStore, (state) => state.currentDeck?.config);
-
-export const selectCurrentDeckInfo = createSelector<
-	DeckStoreActionsNames,
-	DeckStoreState,
-	{ name?: string; id?: number }
->(deckStore, (state) => ({
-	name: state.currentDeck?.name,
-	id: state.currentDeck?.id
-}));

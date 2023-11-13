@@ -32,6 +32,21 @@ export class CardService {
 		});
 	}
 
+	async findCardsAndLimit(query: AnkiCardActionParams['findCards']['query'], limit: number) {
+		return await this._anki.invoke<AnkiCardServiceCall<'findCards'>>({
+			action: 'findCards',
+			version: 6,
+			params: { query }
+		}).then((result) => {
+			if (result.error) return result;
+			if (!result.result) return result;
+			return {
+				error: null,
+				result: result.result.slice(0, limit)
+			}
+		})
+	}
+
 	async cardsToNotes(cards: AnkiCardActionParams['cardsToNotes']['cards']) {
 		return await this._anki.invoke<AnkiCardServiceCall<'cardsToNotes'>>({
 			action: 'cardsToNotes',

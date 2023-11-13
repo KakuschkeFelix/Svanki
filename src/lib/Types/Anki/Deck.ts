@@ -50,6 +50,15 @@ export type DeckConfig = {
 	usn: number;
 };
 
+export type DeckInfo = {
+	deck_id: number;
+	name: string;
+	new_count: number;
+	learn_count: number;
+	review_count: number;
+	total_in_deck: number;
+};
+
 export type AnkiDeckAction = (typeof AnkiDeckActions)[number];
 
 export type AnkiDeckActionParams = {
@@ -80,14 +89,7 @@ export type AnkiDeckActionResult = {
 	cloneDeckConfigId: number;
 	removeDeckConfigId: boolean;
 	getDeckStats: {
-		[deckId: number]: {
-			deck_id: number;
-			name: string;
-			new_count: number;
-			learn_count: number;
-			review_count: number;
-			total_in_deck: number;
-		};
+		[deckId: number]: DeckInfo;
 	};
 };
 
