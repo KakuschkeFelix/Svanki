@@ -170,6 +170,7 @@ export class CardService {
 		return template.replace(/{{(.*?)}}/g, (_, key) => {
 			const sanitizedKey = key.replace(/edit:/g, '').replace(/furigana:/g, '');
 			let value = fields[sanitizedKey]?.value;
+			if (sanitizedKey === 'FrontSide') return '';
 			if (!value) return `{{${sanitizedKey}}}`;
 			if (/furigana:/.test(key)) {
 				value = this.addFurigana(value);

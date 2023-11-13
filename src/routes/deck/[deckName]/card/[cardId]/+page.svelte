@@ -7,10 +7,6 @@
 	const selectedModel = Object.keys(data.models)[0];
 </script>
 
-<AnkiCard
-	card={data.card}
-	model={data.models[selectedModel]}
-	questionField={data.question[selectedModel]}
-	answerField={data.answer[selectedModel]}
-/>
+<AnkiCard card={data.card} model={data.models[selectedModel]} />
+
 <a href="/deck/{$page.params.deckName}/card/{data.nextCard}" class="btn variant-filled">Next</a>

@@ -4,20 +4,36 @@
 
 	export let card: CardInfo;
 	export let model: Record<string, any>;
-	export let questionField: string;
-	export let answerField: string;
 
-	$: fields = Object.entries(card.fields).sort(([, a], [, b]) => a.order - b.order);
+	let showAnswer = false;
 </script>
 
-<!-- {#each fields as [field, fieldConfig]}
-	<div class="field">
-		<h3>{field}</h3>
-		<p>{JSON.stringify(fieldConfig)}</p>
-	</div>
-{/each} -->
-{@html CardService.hydrateCard(card.fields, model['Front'])}
-<br />
-<br />
-<br />
-{@html CardService.hydrateCard(card.fields, model['Back'])}
+<div class="w-full h-full flex justify-center items-center">
+	{#if !showAnswer}
+		<div class="card flex flex-col justify-center text-center p-4 w-fit">
+			<header class="card-header">
+				<h2 class="text-xl font-bold">Question</h2>
+			</header>
+			<section class="p-4 text-5xl">
+				{@html CardService.hydrateCard(card.fields, model['Front'])}
+			</section>
+			<footer class="card-footer">
+				<button
+					class="btn variant-filled-primary"
+					on:click={() => (showAnswer = true)}
+					on:keydown={() => (showAnswer = true)}>Turn Card</button
+				>
+			</footer>
+		</div>
+	{:else}
+		<div class="card w-fit">
+			<header class="card-header">
+				<h2 class="text-xl font-bold">Question</h2>
+			</header>
+			<section class="p-4 text-2xl">
+				{@html CardService.hydrateCard(card.fields, model['Back'])}
+			</section>
+			<footer class="card-footer">(footer)</footer>
+		</div>
+	{/if}
+</div>
